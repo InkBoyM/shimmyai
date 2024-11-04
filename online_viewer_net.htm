@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>d</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f0f2f5;
+        }
+        h1 {
+            color: #333;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            background-color: #ffffff;
+        }
+        #loading {
+            color: #007bff;
+            font-style: italic;
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+    <h1>Goofy ah shimmy shummy ah ai @InkBoyM</h1>
+    <label for="prompt">Ask me anything:</label>
+    <input type="text" id="prompt" name="prompt" placeholder="WARNING will be a little mad at you" required>
+    <button onclick="generateResponse()">Get Answer</button>
+    <p id="loading">Thinking...</p>
+    <div id="response"></div>
+
+    <script>
+        async function generateResponse() {
+            const prompt = document.getElementById('prompt').value;
+            const apiKey = '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'; // Your Hugging Face API Key
+            const endpoint = 'https://api-inference.huggingface.co/models/gpt2'; // Using GPT-2 for compatibility
+
+            const responseElement = document.getElementById('response');
+            const loadingIndicator = document.getElementById('loading');
+
+            // Basic validation
+            if (!prompt.trim()) {
+                responseElement.innerText = "Please enter a question to get an answer.";
+                return;
+            }
+
+            // Clear previous response and show loading
+            responseElement.innerText = "";
+            loadingIndicator.style.display = 'inline';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ inputs: prompt })
+                });
+
+                // Check if the response is OK
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Check if response contains generated text
+                if (data && data[0] && data[0].generated_text) {
+                    responseElement.innerText = data[0].generated_text.trim();
+                } else {
+                    responseElement.innerText = "Sorry, I couldn't generate a response.";
+                }
+
+            } catch (error) {
+                console.error("Error:", error);
+                responseElement.innerText = "An error occurred. Please try again later.";
+            } finally {
+                loadingIndicator.style.display = 'none'; // Hide loading indicator
+            }
+        }
+    </script>
+</body>
+</html>
